@@ -7,10 +7,10 @@ import java.util.Set;
  * Level 1 of the 4-level OPA runtime lineage: manifest of a single compiled policy unit
  * ({@code OPA-GEN-001}, {@code OPA-UNT-001}).
  *
- * @param policyUnitKey stable policy unit key (e.g. {@code unit:pol-ergon-afastamentos-cessao-e-saude:v1})
+ * @param policyUnitKey stable policy unit key (e.g. {@code unit:pol-workforce-afastamentos-cessao-e-saude:v1})
  * @param policyId source policy identifier
  * @param policyVersion source policy version
- * @param regoPackagePath generated Rego package path (e.g. {@code praxis.authz.units.pol_ergon_afastamentos_v1})
+ * @param regoPackagePath generated Rego package path (e.g. {@code praxis.authz.units.pol_workforce_afastamentos_v1})
  * @param digestChain 5-stage per-unit digest chain
  * @param targetPointKeys resolved canonical decision point keys governed by this unit
  */
