@@ -102,7 +102,7 @@ Requires **Java 21**. Published on Maven Central with zero runtime dependencies:
 
 ## Usage Examples
 
-### 1. Canonical Decision Point Identity & Context Fact Facts
+### 1. Canonical Decision Point Identity & Context Facts
 
 ```java
 import org.praxisplatform.authz.contracts.context.ResolvedFactValue;
@@ -127,13 +127,16 @@ import org.praxisplatform.authz.contracts.datascope.KleeneTruthValue;
 import org.praxisplatform.authz.contracts.datascope.NullabilityPredicateIr;
 import org.praxisplatform.authz.contracts.datascope.SearchPredicateOperator;
 
-NullabilityPredicateIr isNotDeleted =
-        new NullabilityPredicateIr("deletedAt", SearchPredicateOperator.IS_NULL);
+NullabilityPredicateIr isNotDeleted = new NullabilityPredicateIr(
+        SearchPredicateOperator.IS_NULL,
+        "resource.deletedAt",
+        "human-resources.employees:deletedAt"
+);
 
 // Structurally ABSENT/MISSING fact evaluates to UNKNOWN (never TRUE) under Kleene 3VL
 KleeneTruthValue result = KleeneSearchPredicateEvaluator.evaluate(
         isNotDeleted,
-        Map.of("deletedAt", ResolvedFactValue.absent("resource.deletedAt"))
+        Map.of("resource.deletedAt", ResolvedFactValue.absent("resource.deletedAt"))
 );
 ```
 
