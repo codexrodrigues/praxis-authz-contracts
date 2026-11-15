@@ -1,26 +1,26 @@
-# Security Policy
+# Política de Segurança (`praxis-authz-contracts`)
 
-`praxis-authz-contracts` defines the foundational contracts, canonical digest calculators, policy AST validators, masking lattices, and compatibility verifiers for the **Praxis Authorization Decision Platform**. Security-relevant defects in these contracts must be handled responsibly.
+`praxis-authz-contracts` define os contratos canônicos de identidade, fatos em 6 estados, escopo relacional Kleene 3VL, lattice comutativo de mascaramento, barreiras de obrigações e cadeia acíclica de 8 estágios de digest da **Praxis Authorization Decision Platform**. Defeitos com impacto de segurança devem ser comunicados de forma responsável e confidencial.
 
-## Reporting a Vulnerability
+## Reportando uma Vulnerabilidade
 
-Do **not** open public GitHub issues containing exploit payloads, sensitive host data, tokens, keys, or customer details.
+**Não** abra issues públicas no GitHub contendo payloads de exploração, detalhes de vulnerabilidades em produção, credenciais, tokens, chaves privadas ou dados de clientes.
 
-Report vulnerabilities privately to the repository maintainer via GitHub Security Advisories (`codexrodrigues/praxis-authz-contracts`) and include:
+Envie o relato em canal privado ao mantenedor via **GitHub Security Advisories** (`codexrodrigues/praxis-authz-contracts`), informando:
 
-- Affected version, tag, or commit hash;
-- Contract class, validator, digest stage, or invariant involved (`CC01–CC12`);
-- Minimal reproduction scenario without real credentials or tenant data;
-- Impact assessment (e.g., digest collision, AST limit bypass, Kleene 3VL ambiguity, or mask downgrade).
+- Versão, tag ou hash de commit afetado;
+- Contrato ou pacote envolvido (por exemplo: `KleeneSearchPredicateEvaluator`, `CanonicalDigestCalculator`, `ResolvedFactValue`, `DefaultMaskStrategyRegistry`, `DefaultAuthorizationPolicyCandidateValidator` ou `DefaultHostPolicyCompatibilityVerifier`);
+- Cenário mínimo reproduzível sem dados sensíveis ou reais;
+- Impacto de segurança observado (por exemplo: colisão ou desvio na cadeia de 8 digests, contorno de lógica Kleene 3VL com `ABSENT`/`NULL`, ou quebra de dominância no lattice de mascaramento).
 
-## Security Design Invariants
+## Invariantes de Segurança por Design
 
-- **Domain-Separated Acyclic Digests:** `CanonicalDigestCalculator` separates all 8 `DigestDomainKind` preimages and rejects cyclic or inverted stage dependencies (`BND-DIG-002`);
-- **Bounded Candidate Policy ASTs:** `DefaultAuthorizationPolicyCandidateValidator` enforces structural limits (`MAX_AST_DEPTH`, `MAX_AST_NODES`, `MAX_IN_LITERALS`, `MAX_REFERENCED_FACTS`) and rejects disallowed operators or ungrounded fact references;
-- **Fail-Closed Masking & Obligation Lattices:** Masking merges are strictly monotonic (`OMIT > NULLIFY > REDACT_CONSTANT > HASH_TOKEN_KEYED > SUMMARY_ONLY > CPF_CNPJ_PARTIAL / PARTIAL_MASK`), and incompatible obligation triggers or barriers fail with explicit conflicts;
-- **3-Valued Null Safety:** `KleeneSearchPredicateEvaluator` preserves `UNKNOWN` for missing/absent facts so neither `IS_NULL` nor `NOT(IS_NULL)` silently widens access.
+- **Verdade Estrita em Kleene 3VL:** A avaliação de `DataScopePlan` distingue explicitamente `TRUE`, `FALSE` e `UNKNOWN` (ex.: `IS_NULL(ABSENT) = UNKNOWN`, `NOT(UNKNOWN) = UNKNOWN`), exigindo estritamente `TRUE` para concessão;
+- **Fatos em 6 Estados:** `FactResolutionStatus` impede que `ABSENT`, `STALE`, `UNAVAILABLE` ou `ERROR` sejam tratados como valores válidos ou booleanos falsos;
+- **Dominância em Lattice Comutativo:** No mascaramento, `OMIT` (100) prevalece sobre qualquer estratégia inferior em `DefaultMaskStrategyRegistry`;
+- **Integridade Acíclica em 8 Domínios (`DigestDomainKind`):** Alterações estruturais da definição até o artefato compilado invalidam automaticamente o handshake `praxis.host-policy-compatibility/v1`.
 
-## Credential & Release Hygiene
+## Higiene de Credenciais e Releases
 
-- Never commit Maven Central tokens, GitHub PATs, GPG private keys, passphrases, or HMAC secrets;
-- All Maven Central releases require GPG signatures generated exclusively in CI via GitHub Secrets (see [RELEASING.md](RELEASING.md)).
+- Nunca versione tokens do Sonatype Central Portal, PATs do GitHub ou chaves GPG neste repositório;
+- Toda publicação oficial ocorre apenas pelo fluxo automatizado e assinado descrito em [RELEASING.md](RELEASING.md).

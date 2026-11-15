@@ -1,22 +1,19 @@
-# Changelog
+# Histórico de Alterações (Changelog)
 
-All notable changes to `praxis-authz-contracts` are documented in this file.
+Todas as mudanças relevantes de `praxis-authz-contracts` são documentadas neste arquivo.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0-beta.1] - 2026-11-15
 
-### Added
-- Initial Maven Central beta publication of `io.github.codexrodrigues:praxis-authz-contracts:0.1.0-beta.1`.
-- Complete Contract Closure Pack (`CC01–CC12`) in pure Java 21 with zero transitive runtime dependencies:
-  - `decisionpoint`: `DecisionPointIdentity`, `DecisionPointDescriptor`, `FieldUseCategory` (closed 6-category vocabulary), and `PointAuthorityMode`;
-  - `context`: `FactDescriptor`, `FactContract`, `ContextCompositionProfile`, 6-state `ResolvedFactValue`, `ProviderInputProjection`, and `TemporalContext`;
-  - `datascope`: `DataScopePlan` (`praxis.data-scope/v1`), `QueryableResourceProjection`, `SearchPredicateIr`, and `KleeneSearchPredicateEvaluator`;
-  - `binding`: `RuntimeEnforcementBinding`, 15-step `EnforcementPipelineStep`, and `WriteIntent` (`SET`, `CLEAR_EXPLICIT_NULL`, `REMOVE`);
-  - `policy`: `AuthorizationPolicyDefinition` (`praxis.authorization-policy/v1`), `DefaultAuthorizationPolicyCandidateValidator`, and `DualScopeDelegationSpec`;
-  - `authority` & `envelope`: `EffectiveAuthorityBinding`, `ProviderEvaluationEnvelope`, and `DecisionEvidence`;
-  - `masking`: `MaskStrategyRegistry` and `DefaultMaskStrategyRegistry` implementing the 7-strategy commutative merge lattice;
-  - `obligation`: `ObligationHandlerRegistry` and `DefaultObligationHandlerRegistry` (`REQUIRE_MFA`, `REQUIRE_JUSTIFICATION`, `DURABLE_AUDIT_EVIDENCE`, `WATERMARK`);
-  - `digest`: 8-stage acyclic `DigestDomainKind` DAG, `CanonicalDigestCalculator`, `OpaRuntimeRelease`, and `OpaRuntimeHead`;
-  - `compatibility`: `HostPolicyCompatibilityManifest`, `ImpactGraphBaseline`, and `DefaultHostPolicyCompatibilityVerifier`.
-- Reproducible Maven release pipeline with `flatten-maven-plugin`, source/Javadoc packaging, GPG signing, and Maven Enforcer rules banning Spring, Hibernate, and JPA dependencies.
+### Adicionado
+- Publicação beta inicial no Maven Central de `io.github.codexrodrigues:praxis-authz-contracts:0.1.0-beta.1` com **zero dependências de runtime**.
+- Contratos canônicos do pacote `CC01–CC12`:
+  - `decisionpoint`: `DecisionPointIdentity`, `DecisionPointDescriptor`, `FieldUseCategory` fechado (`VALUE`, `FILTER`, `SORT`, `GROUP`, `AGGREGATE`, `JOIN`) e `PointAuthorityMode`.
+  - `context`: `FactDescriptor`, `FactContract`, `ResolvedFactValue` e resolução em 6 estados (`PRESENT`, `NULL`, `ABSENT`, `STALE`, `UNAVAILABLE`, `ERROR`).
+  - `datascope`: IR `DataScopePlan` (`praxis.data-scope/v1`), `NullabilityPredicateIr`, `KleeneSearchPredicateEvaluator` e `KleeneTruthValue` em lógica Kleene de 3 valores.
+  - `binding`: `RuntimeEnforcementBinding`, `EnforcementPipelineStep` (`STEP_01` a `STEP_15`) e `WriteIntent` (`SET`, `CLEAR_EXPLICIT_NULL`, `REMOVE`).
+  - `policy`, `authority`, `envelope`: `AuthorizationPolicyDefinition` (`praxis.authorization-policy/v1`), `DualScopeDelegationSpec`, `EffectiveAuthorityBinding` e `ProviderEvaluationEnvelope`.
+  - `masking` e `obligation`: lattice comutativo de 7 estratégias (`OMIT` > `NULLIFY` > `REDACT_CONSTANT` > `HASH_TOKEN_KEYED` > `SUMMARY_ONLY` > `CPF_CNPJ_PARTIAL` / `PARTIAL_MASK`) e barreiras *fail-closed* (`BEFORE_EXECUTION`, `BEFORE_COMMIT_OUTBOX`, `BEFORE_DISCLOSURE`).
+  - `digest` e `compatibility`: `CanonicalDigestCalculator` sobre 8 estágios acíclicos (`DEFINITION_FINGERPRINT` até `BUNDLE_ARTIFACT_DIGEST`) e `HostPolicyCompatibilityManifest` (`praxis.host-policy-compatibility/v1`).
+- Empacotamento reprodutível com `flatten-maven-plugin`, fontes/Javadoc assinados por GPG e regras `maven-enforcer-plugin` proibindo `org.springframework:*`, `org.springframework.boot:*`, `jakarta.persistence:*` e `org.hibernate.orm:*`.

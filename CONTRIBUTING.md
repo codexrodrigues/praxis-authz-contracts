@@ -1,35 +1,20 @@
-# Contributing to Praxis Authz Contracts
+# Como Contribuir com `praxis-authz-contracts`
 
-Thank you for contributing to `praxis-authz-contracts`.
+Contribuições para `praxis-authz-contracts` devem preservar a neutralidade de framework, o determinismo criptográfico e a compatibilidade com os demais projetos da **Praxis Platform**.
 
-## Development Baseline
+## Princípios de Contribuição
 
-- **Java:** 21 (`[21,22)` enforced by `maven-enforcer-plugin`)
-- **Maven:** 3.9.0 or newer
+1. **Zero Dependências de Framework (`BND-OWN-001`):** Nunca adicione `org.springframework:*`, `org.springframework.boot:*`, `jakarta.persistence:*`, `org.hibernate.orm:*` ou clientes HTTP neste módulo. Se um contrato precisar de integração JPA ou Spring, o lugar correto é [`praxis-authz-enforcement-core`](https://github.com/codexrodrigues/praxis-authz-enforcement-core) ou [`praxis-authz-starter`](https://github.com/codexrodrigues/praxis-authz-starter).
+2. **Contratos Imutáveis e Tipados:** Prefira `record`s, `enum`s fechados e contratos auto-validáveis em vez de mapas soltos `Map<String, Object>`.
+3. **Semântica Cross-Canal:** Toda mudança de contrato deve considerar seu impacto simultâneo em interfaces tradicionais, interfaces generativas, agentes de IA e sidecars OPA — nunca introduza atalhos específicos de um único consumidor.
+4. **Cobertura de Conformidade (`CC01–CC12`):** Novos campos, nós de `DataScopePlan` ou estágios em `PolicyDigestChain` exigem testes determinísticos cobrindo serialização canônica e casos extremos (especialmente `UNKNOWN` em lógica Kleene 3VL).
+5. **Documentação em PT-BR e Inglês Técnico Consistente:** Documente APIs públicas, JavaDocs e atualizações de guia em Português do Brasil claro e didático, mantendo os identificadores técnicos exatos do código.
 
-Run full local verification before submitting changes:
+## Fluxo de Trabalho Local
 
 ```powershell
 mvn -B clean verify
 ```
 
-Verify that the runtime dependency tree remains empty (`0` transitive dependencies):
-
-```powershell
-mvn -B dependency:tree -Dscope=runtime
-```
-
-## Module Boundary & Enforcer Rules
-
-`praxis-authz-contracts` is the pure contract foundation of the **Praxis Authorization Decision Platform**:
-
-- Keep all contracts framework-neutral. **Never** add dependencies on `org.springframework.*`, `org.springframework.boot.*`, `jakarta.persistence.*`, `org.hibernate.orm.*`, Jackson, HTTP clients, or OPA SDKs;
-- Keep business rule semantics (`decisionKind = BUSINESS`) in `praxis-rules-engine` and control-plane persistence/authoring in `praxis-config-starter`;
-- Keep resource/UI metadata semantics (`@ApiResource`, `x-ui`, `/schemas/**`) in `praxis-metadata-starter`.
-
-## Contract & Release Discipline
-
-- Changes to exported records, enums, SPI interfaces, digest preimages, or schema versions (`praxis.authorization-policy/v1`, `praxis.data-scope/v1`, `praxis.host-policy-compatibility/v1`) affect downstream modules (`praxis-authz-enforcement-core`, `praxis-authz-opa`, `praxis-authz-starter`) and must be validated across the chain;
-- Update Javadoc, `README.md`, and `CHANGELOG.md` whenever public contracts change;
-- Never commit secrets, GPG material, personal tokens, or environment-specific URLs;
-- Do not create release tags manually or run local `mvn deploy`; follow [RELEASING.md](RELEASING.md).
+- Consulte [AGENTS.md](AGENTS.md) para convenções de engenharia aplicadas a humanos e agentes;
+- Consulte [ACTIONS-RELEASE-POLICY.md](ACTIONS-RELEASE-POLICY.md) antes de propor mudanças em `.github/workflows/`.
