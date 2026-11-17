@@ -91,13 +91,13 @@ class Wave1CoreContractsConformanceTest {
                 "HUMAN_RESOURCES_ADMINISTRATION",
                 null
         );
-        FactDescriptor cidFact = new FactDescriptor(
-                "resource.cidCodigo",
+        FactDescriptor medicalFact = new FactDescriptor(
+                "resource.medicalCode",
                 FactSlotNamespace.RESOURCE,
                 FactValueType.STRING,
                 FactCardinality.SCALAR,
                 FactPresenceModel.MAY_BE_ABSENT,
-                "ergon.afastamentos.cid_codigo",
+                "hr.leave_requests.medical_code",
                 null,
                 FactResolutionStage.EXTRACT,
                 Set.of(ContextEvaluationPhase.TARGET),
@@ -111,12 +111,12 @@ class Wave1CoreContractsConformanceTest {
 
         // R-02: Imaginary classification HEALTH_BIOMETRIC must be rejected
         assertThrows(IllegalArgumentException.class, () -> new FactDescriptor(
-                "resource.cidCodigo",
+                "resource.medicalCode",
                 FactSlotNamespace.RESOURCE,
                 FactValueType.STRING,
                 FactCardinality.SCALAR,
                 FactPresenceModel.MAY_BE_ABSENT,
-                "ergon.afastamentos.cid_codigo",
+                "hr.leave_requests.medical_code",
                 null,
                 FactResolutionStage.EXTRACT,
                 Set.of(ContextEvaluationPhase.TARGET),
@@ -129,28 +129,28 @@ class Wave1CoreContractsConformanceTest {
         ));
 
         String fcDigest = CanonicalDigestCalculator.computeDigest(
-                DigestDomainKind.DEPENDENCY_MANIFEST_DIGEST, "fc-afastamentos-v1");
+                DigestDomainKind.DEPENDENCY_MANIFEST_DIGEST, "fc-leave-requests-v1");
         FactContract contract = new FactContract(
                 FactContract.SCHEMA_VERSION_V1,
-                "human-resources.afastamentos:default-authz-facts",
+                "human-resources.leave-requests:default-authz-facts",
                 "1.0.0",
                 fcDigest,
-                "human-resources.afastamentos",
+                "human-resources.leave-requests",
                 Map.of(
                         subjectId.factPath(), subjectId,
-                        cidFact.factPath(), cidFact
+                        medicalFact.factPath(), medicalFact
                 )
         );
 
         ContextCompositionProfile profile = new ContextCompositionProfile(
                 ContextCompositionProfile.SCHEMA_VERSION_V1,
-                "prof-afastamentos-target",
-                "resource-operation/human-resources.afastamentos/findById",
+                "prof-leave-requests-target",
+                "resource-operation/human-resources.leave-requests/findById",
                 ContextEvaluationPhase.TARGET,
                 contract.factContractId(),
                 contract.factContractDigest(),
                 Set.of("subject.principalId"),
-                Set.of("resource.cidCodigo"),
+                Set.of("resource.medicalCode"),
                 250L,
                 true
         );
@@ -158,8 +158,8 @@ class Wave1CoreContractsConformanceTest {
         // R-08: Verify all 6 frozen FactResolutionStatus states
         assertEquals(6, FactResolutionStatus.values().length);
         assertEquals(FactResolutionStatus.PRESENT, ResolvedFactValue.present("subject.principalId", "usr-1").status());
-        assertEquals(FactResolutionStatus.NULL, ResolvedFactValue.explicitNull("resource.cidCodigo").status());
-        assertEquals(FactResolutionStatus.ABSENT, ResolvedFactValue.absent("resource.cidCodigo").status());
+        assertEquals(FactResolutionStatus.NULL, ResolvedFactValue.explicitNull("resource.medicalCode").status());
+        assertEquals(FactResolutionStatus.ABSENT, ResolvedFactValue.absent("resource.medicalCode").status());
         assertEquals(FactResolutionStatus.STALE, ResolvedFactValue.stale("subject.principalId", "STALE_CACHE").status());
         assertEquals(FactResolutionStatus.UNAVAILABLE,
                 ResolvedFactValue.unavailable("subject.principalId", FactUnavailableCause.SOURCE_TIMEOUT, "TIMEOUT").status());
@@ -175,7 +175,7 @@ class Wave1CoreContractsConformanceTest {
                 new TemporalContext(Instant.parse("2026-11-08T17:00:00Z"), ZoneId.of("America/Sao_Paulo")),
                 Map.of(
                         "subject.principalId", ResolvedFactValue.present("subject.principalId", "usr-9910"),
-                        "resource.cidCodigo", ResolvedFactValue.present("resource.cidCodigo", "J11")
+                        "resource.medicalCode", ResolvedFactValue.present("resource.medicalCode", "J11")
                 ),
                 Set.of()
         );
@@ -188,15 +188,15 @@ class Wave1CoreContractsConformanceTest {
                 profile,
                 Set.of("subject.principalId")
         );
-        assertTrue(projection.omittedSensitiveFactPaths().contains("resource.cidCodigo"));
-        assertFalse(projection.projectedInput().containsKey("resource.cidCodigo"));
+        assertTrue(projection.omittedSensitiveFactPaths().contains("resource.medicalCode"));
+        assertFalse(projection.projectedInput().containsKey("resource.medicalCode"));
         assertEquals("usr-9910", projection.projectedInput().get("subject.principalId"));
 
         // P1-R03: Reject overlapping required and optional fact paths in ContextCompositionProfile
         assertThrows(IllegalArgumentException.class, () -> new ContextCompositionProfile(
                 ContextCompositionProfile.SCHEMA_VERSION_V1,
                 "prof-overlap",
-                "resource-operation/human-resources.afastamentos/findById",
+                "resource-operation/human-resources.leave-requests/findById",
                 ContextEvaluationPhase.TARGET,
                 contract.factContractId(),
                 contract.factContractDigest(),
@@ -221,7 +221,7 @@ class Wave1CoreContractsConformanceTest {
                 snapshot,
                 contract,
                 profile,
-                Set.of("subject.principalId", "resource.cidCodigo")
+                Set.of("subject.principalId", "resource.medicalCode")
         ));
     }
 
@@ -236,19 +236,19 @@ class Wave1CoreContractsConformanceTest {
 
         // R-06: Canonical DecisionPointIdentity grammar
         DecisionPointIdentity identity = DecisionPointIdentity.resourceOperation(
-                "praxis-ergon-showcase",
-                "human-resources.afastamentos",
-                "atualizarSubstituto"
+                "workforce-service",
+                "human-resources.leave-requests",
+                "assignSubstitute"
         );
-        assertEquals("resource-operation/human-resources.afastamentos/atualizarSubstituto", identity.pointKey());
+        assertEquals("resource-operation/human-resources.leave-requests/assignSubstitute", identity.pointKey());
 
         // Legacy colon-delimited key must be rejected
         assertThrows(IllegalArgumentException.class, () -> new DecisionPointIdentity(
-                "resource:human-resources.afastamentos:operation:atualizarSubstituto",
+                "resource:human-resources.leave-requests:operation:assignSubstitute",
                 DecisionPointKind.RESOURCE_OPERATION,
-                "praxis-ergon-showcase",
-                "human-resources.afastamentos",
-                "atualizarSubstituto"
+                "workforce-service",
+                "human-resources.leave-requests",
+                "assignSubstitute"
         ));
 
         String dpDigest = CanonicalDigestCalculator.computeDigest(
@@ -258,18 +258,18 @@ class Wave1CoreContractsConformanceTest {
                 identity,
                 DecisionKind.AUTHORIZATION,
                 DecisionResultContractKind.GATE,
-                "atualizar-substituto",
+                "assign-substitute",
                 "UPDATE_PARTIAL",
                 "PATCH",
-                "/api/human-resources/afastamentos/{id}/substituto",
+                "/api/human-resources/leave-requests/{id}/substitute",
                 Set.of(EvaluationMode.TARGET),
                 Set.of(EnforcementCapability.ACCESS, EnforcementCapability.FIELD_WRITE, EnforcementCapability.FIELD_USE, EnforcementCapability.MASK),
                 Set.of(FieldUseCategory.VALUE),
                 new ObligationSupportProfile(Set.of("REQUIRE_JUSTIFICATION"), Set.of("BEFORE_EXECUTION")),
                 new FactContractRef("fc-1", dpDigest),
                 null,
-                new SchemaDigestRef("AfastamentoSubstitutoPatchDTO", dpDigest),
-                new SchemaDigestRef("AfastamentoResponseDTO", dpDigest),
+                new SchemaDigestRef("LeaveRequestSubstitutePatchDTO", dpDigest),
+                new SchemaDigestRef("LeaveRequestResponseDTO", dpDigest),
                 "HUMAN_RESOURCES_ADMINISTRATION",
                 "LGPD:ART_7_III",
                 new DecisionPointProvenance(Set.of("OPENAPI_OPERATION"), Set.of("x-ui.governance")),
@@ -280,13 +280,13 @@ class Wave1CoreContractsConformanceTest {
         // Counterexample: SEARCH mode without queryProjectionRef must fail (DPC-CAP-002)
         assertThrows(IllegalArgumentException.class, () -> new DecisionPointDescriptor(
                 DecisionPointDescriptor.SCHEMA_VERSION_V1,
-                DecisionPointIdentity.resourceOperation("praxis-ergon-showcase", "human-resources.afastamentos", "filter"),
+                DecisionPointIdentity.resourceOperation("workforce-service", "human-resources.leave-requests", "filter"),
                 DecisionKind.AUTHORIZATION,
                 DecisionResultContractKind.GATE,
                 null,
                 "SEARCH",
                 "POST",
-                "/api/human-resources/afastamentos/filter",
+                "/api/human-resources/leave-requests/filter",
                 Set.of(EvaluationMode.SEARCH),
                 Set.of(EnforcementCapability.DATA_SCOPE),
                 Set.of(),
@@ -309,14 +309,14 @@ class Wave1CoreContractsConformanceTest {
         assertEquals(12, EnforcementPipelineStep.STEP_12_EXECUTE_SERVER_HYDRATION_AND_BUSINESS_RULES.stepNumber());
 
         WriteFieldChange setChange = new WriteFieldChange(
-                "/substitutoMatricula",
-                "ergon.afastamentos.substituto_matricula",
+                "/substituteCode",
+                "hr.leave_requests.substitute_code",
                 WriteChangeKind.SET,
-                "MAT-20499"
+                "EMP-20499"
         );
         WriteFieldChange clearChange = new WriteFieldChange(
-                "/observacao",
-                "ergon.afastamentos.observacao",
+                "/notes",
+                "hr.leave_requests.notes",
                 WriteChangeKind.CLEAR_EXPLICIT_NULL,
                 null
         );
@@ -328,12 +328,12 @@ class Wave1CoreContractsConformanceTest {
                 List.of(setChange, clearChange)
         );
         assertEquals(
-                Set.of("ergon.afastamentos.substituto_matricula", "ergon.afastamentos.observacao"),
+                Set.of("hr.leave_requests.substitute_code", "hr.leave_requests.notes"),
                 writeIntent.modifiedAttributeIds()
         );
 
         DecisionPointIdentity id = DecisionPointIdentity.resourceOperation(
-                "praxis-ergon-showcase", "human-resources.afastamentos", "atualizarSubstituto");
+                "workforce-service", "human-resources.leave-requests", "assignSubstitute");
         String digest = CanonicalDigestCalculator.computeDigest(DigestDomainKind.DEPENDENCY_MANIFEST_DIGEST, "dp");
         RuntimeEnforcementBinding binding1 = new RuntimeEnforcementBinding(
                 RuntimeEnforcementBinding.SCHEMA_VERSION_V1,
@@ -393,7 +393,7 @@ class Wave1CoreContractsConformanceTest {
         // OPA-RT-004: HTTP 200 {} without 'result' must produce GateOutcome.TECHNICAL_ERROR
         ProviderEvaluationEnvelope undefinedEnv = ProviderEvaluationEnvelope.failClosedForUndefinedOpaResult(
                 Map.of(),
-                "resource-operation/human-resources.afastamentos/findById",
+                "resource-operation/human-resources.leave-requests/findById",
                 EvaluationMode.TARGET,
                 "sha256:8f9d2a1b4c6e7f01928374655647382910abcdef1234567890abcdef12345678",
                 Instant.now()
@@ -416,7 +416,7 @@ class Wave1CoreContractsConformanceTest {
                 ProviderEvaluationEnvelope.SCHEMA_VERSION_V1,
                 "OPA_REGO_V1",
                 "eval-conflict",
-                "resource-operation/human-resources.afastamentos/findById",
+                "resource-operation/human-resources.leave-requests/findById",
                 EvaluationMode.TARGET,
                 "praxis.authorization-combining/v1",
                 "rev-1",
@@ -429,7 +429,7 @@ class Wave1CoreContractsConformanceTest {
                 List.of(),
                 List.of(new PolicyConflictIssue(
                         "MASK_CONFLICT",
-                        "ergon.afastamentos.cid_codigo",
+                        "hr.leave_requests.medical_code",
                         Set.of("unit:p1:v1", "unit:p2:v1"),
                         "Conflicting mask parameters")),
                 List.of(new PolicyUnitContributionTrace(
@@ -450,7 +450,7 @@ class Wave1CoreContractsConformanceTest {
                 ProviderEvaluationEnvelope.SCHEMA_VERSION_V1,
                 "OPA_REGO_V1",
                 "eval-ok",
-                "resource-operation/human-resources.afastamentos/findById",
+                "resource-operation/human-resources.leave-requests/findById",
                 EvaluationMode.TARGET,
                 "praxis.authorization-combining/v1",
                 "rev-1",
@@ -500,7 +500,7 @@ class Wave1CoreContractsConformanceTest {
         // P1-R05: DecisionEvidence rejects overlapping fulfilled and unfulfilled obligation types
         assertThrows(IllegalArgumentException.class, () -> new DecisionEvidence(
                 "ev-2",
-                "resource-operation/human-resources.afastamentos/findById",
+                "resource-operation/human-resources.leave-requests/findById",
                 EvaluationMode.TARGET,
                 "rev-1",
                 "sha256:99887766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa",
@@ -517,7 +517,7 @@ class Wave1CoreContractsConformanceTest {
         // ENF-OBL-003: DecisionEvidence cannot record PERMIT with unfulfilled obligations
         assertThrows(IllegalArgumentException.class, () -> new DecisionEvidence(
                 "ev-1",
-                "resource-operation/human-resources.afastamentos/findById",
+                "resource-operation/human-resources.leave-requests/findById",
                 EvaluationMode.TARGET,
                 "rev-1",
                 "sha256:99887766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa",

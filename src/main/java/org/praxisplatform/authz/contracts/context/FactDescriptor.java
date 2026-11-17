@@ -11,7 +11,7 @@ import java.util.Set;
  * {@code DomainDataCategory} ({@code CREDENTIAL}, {@code SENSITIVE_PERSONAL}, {@code PERSONAL},
  * {@code FINANCIAL}, {@code OPERATIONAL}, {@code LEGAL}), and {@code LegalTreatmentPurpose}.</p>
  *
- * @param factPath canonical SARC path (e.g. {@code subject.organizationUnitIds}, {@code resource.cidCodigo})
+ * @param factPath canonical SARC path (e.g. {@code subject.organizationUnitIds}, {@code resource.medicalCode})
  * @param namespace SARC namespace matching the prefix of {@code factPath}
  * @param valueType canonical scalar or element value type
  * @param cardinality scalar, set, or list cardinality

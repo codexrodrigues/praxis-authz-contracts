@@ -4,6 +4,12 @@ Todas as mudanças relevantes de `praxis-authz-contracts` são documentadas nest
 
 O formato segue o padrão [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Adicionado
+- Pacote `org.praxisplatform.authz.contracts.annotation` com anotações declarativas puras (zero dependências Spring/JPA/Hibernate/Jackson): `@AuthzTenantScope`, `@AuthzScopeAnchor`, `@AuthzCustodyPartition`, `@AuthzMask` e `@AuthzActionRule`, além de `AuthzTenantScopeMode`, `AuthzDelegationSplitMode`, `AuthzCustodyRole` e `AuthzMaskStrategy`.
+- Modos e acessores neutros em `DualScopeDelegationSpec` (`ORIGIN_DESTINATION_SPLIT`, `ORIGIN_ONLY_WRITE`, `READ_ONLY_DESTINATION`, `originFactPath()`, `destinationFactPath()`, `originExclusiveWriteAttributes()`, `destinationAllowedWriteAttributes()`, `ofOriginAndDestination(...)`, `allowsDestinationWrites()` e `forbidsDestinationOnlyWrites()`), preservando os identificadores anteriores como delegados `@Deprecated` compatíveis.
+
 ## [0.1.0-beta.1] - 2026-11-15
 
 ### Adicionado

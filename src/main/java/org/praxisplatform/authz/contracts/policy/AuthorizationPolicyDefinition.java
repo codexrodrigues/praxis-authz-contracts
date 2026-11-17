@@ -21,7 +21,7 @@ import org.praxisplatform.authz.contracts.digest.OpaProviderIoSchemas;
  * @param legalBasisRef legal basis reference
  * @param combiningProfileRef combining profile reference ({@code praxis.authorization-combining/v1})
  * @param targets non-empty list of target specifications
- * @param dualScopeDelegation optional dual-scope functional delegation specification
+ * @param dualScopeDelegation optional dual-scope functional delegation specification ({@code origin} vs {@code destination})
  * @param factRequirements declared fact requirements
  * @param rules non-empty list of authorization policy rules
  * @param materializationTargets non-empty list of materialization targets

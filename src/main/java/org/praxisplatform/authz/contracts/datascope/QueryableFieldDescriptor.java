@@ -8,7 +8,7 @@ import org.praxisplatform.authz.contracts.context.FactValueType;
  * Persistence-neutral descriptor of a single queryable resource field inside a
  * {@link QueryableResourceProjection} ({@code DSP-FLD-001..007}).
  *
- * @param fieldPath canonical resource fact path (e.g. {@code resource.lotacaoSetorId})
+ * @param fieldPath canonical resource fact path (e.g. {@code resource.departmentId})
  * @param attributeId canonical {@code @DomainLineage.attributeId}
  * @param valueType field value type
  * @param supportedOperators operators supported for pushdown on this field

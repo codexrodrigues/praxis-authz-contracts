@@ -7,7 +7,7 @@ import java.util.Objects;
  *
  * <p>Canonical serialized {@code pointKey} grammar:
  * {@code <kindPrefix>/<resourceOrContextKey>/<operationOrActionKey>} (e.g.
- * {@code resource-operation/human-resources.afastamentos/atualizarSubstituto}).</p>
+ * {@code resource-operation/human-resources.leave-requests/assignSubstitute}).</p>
  *
  * @param pointKey canonical serialized key
  * @param pointKind species of decision point

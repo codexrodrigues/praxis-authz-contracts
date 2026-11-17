@@ -6,7 +6,7 @@ import java.util.Objects;
  * Single field mutation captured in a {@link WriteIntent} prior to server-side {@code hydrate*}
  * ({@code ENF-FW-001..004B}).
  *
- * @param canonicalWirePath JSON Pointer / wire path in the request DTO (e.g. {@code /substitutoMatricula})
+ * @param canonicalWirePath JSON Pointer / wire path in the request DTO (e.g. {@code /substituteCode})
  * @param attributeId canonical {@code @DomainLineage.attributeId}
  * @param changeKind whether the field is being {@code SET}, {@code CLEAR_EXPLICIT_NULL}, or {@code REMOVE}d
  * @param declaredValueProjection projected value when {@code changeKind == SET}, otherwise {@code null}

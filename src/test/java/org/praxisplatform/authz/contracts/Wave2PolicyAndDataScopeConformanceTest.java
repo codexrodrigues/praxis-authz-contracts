@@ -86,47 +86,47 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 FactPresenceModel.ALWAYS_PRESENT, null, null, FactResolutionStage.ENRICH,
                 Set.of(ContextEvaluationPhase.ADMISSION, ContextEvaluationPhase.TARGET), false,
                 "INTERNAL", "OPERATIONAL", Set.of(), "HUMAN_RESOURCES_ADMINISTRATION", null);
-        FactDescriptor resLotacao = new FactDescriptor(
-                "resource.lotacaoSetorId", FactSlotNamespace.RESOURCE, FactValueType.INT64, FactCardinality.SCALAR,
-                FactPresenceModel.ALWAYS_PRESENT, "ergon.afastamentos.lotacao_setor_id", null, FactResolutionStage.EXTRACT,
+        FactDescriptor resDept = new FactDescriptor(
+                "resource.departmentId", FactSlotNamespace.RESOURCE, FactValueType.INT64, FactCardinality.SCALAR,
+                FactPresenceModel.ALWAYS_PRESENT, "hr.leave_requests.department_id", null, FactResolutionStage.EXTRACT,
                 Set.of(ContextEvaluationPhase.TARGET), true,
                 "INTERNAL", "OPERATIONAL", Set.of(), "HUMAN_RESOURCES_ADMINISTRATION", null);
-        FactDescriptor resCid = new FactDescriptor(
-                "resource.cidCodigo", FactSlotNamespace.RESOURCE, FactValueType.STRING, FactCardinality.SCALAR,
-                FactPresenceModel.MAY_BE_ABSENT, "ergon.afastamentos.cid_codigo", null, FactResolutionStage.EXTRACT,
+        FactDescriptor resMedical = new FactDescriptor(
+                "resource.medicalCode", FactSlotNamespace.RESOURCE, FactValueType.STRING, FactCardinality.SCALAR,
+                FactPresenceModel.MAY_BE_ABSENT, "hr.leave_requests.medical_code", null, FactResolutionStage.EXTRACT,
                 Set.of(ContextEvaluationPhase.TARGET), true,
                 "RESTRICTED", "SENSITIVE_PERSONAL", Set.of("HEALTH_DATA"), "OFFICIAL_HEALTH_EXPERTISE", null);
-        FactDescriptor resEmCurso = new FactDescriptor(
-                "resource.facts.emCurso", FactSlotNamespace.RESOURCE, FactValueType.BOOLEAN, FactCardinality.SCALAR,
-                FactPresenceModel.ALWAYS_PRESENT, null, "afastamento.emCurso", FactResolutionStage.DERIVE,
+        FactDescriptor resActive = new FactDescriptor(
+                "resource.facts.isActive", FactSlotNamespace.RESOURCE, FactValueType.BOOLEAN, FactCardinality.SCALAR,
+                FactPresenceModel.ALWAYS_PRESENT, null, "leaveRequest.isActive", FactResolutionStage.DERIVE,
                 Set.of(ContextEvaluationPhase.TARGET), false,
                 "INTERNAL", "OPERATIONAL", Set.of(), "HUMAN_RESOURCES_ADMINISTRATION", null);
 
         FactContract factContract = new FactContract(
                 FactContract.SCHEMA_VERSION_V1,
-                "fc-afastamentos",
+                "fc-leave-requests",
                 "1.0.0",
                 fcDigest,
-                "human-resources.afastamentos",
+                "human-resources.leave-requests",
                 Map.of(
                         subPrincipal.factPath(), subPrincipal,
                         subOrgs.factPath(), subOrgs,
-                        resLotacao.factPath(), resLotacao,
-                        resCid.factPath(), resCid,
-                        resEmCurso.factPath(), resEmCurso
+                        resDept.factPath(), resDept,
+                        resMedical.factPath(), resMedical,
+                        resActive.factPath(), resActive
                 )
         );
 
         QueryableResourceProjection queryProjection = new QueryableResourceProjection(
                 QueryableResourceProjection.SCHEMA_VERSION_V1,
-                "qp-afastamentos",
-                "human-resources.afastamentos",
+                "qp-leave-requests",
+                "human-resources.leave-requests",
                 qpDigest,
                 Map.of(
-                        "resource.lotacaoSetorId",
+                        "resource.departmentId",
                         new QueryableFieldDescriptor(
-                                "resource.lotacaoSetorId",
-                                "ergon.afastamentos.lotacao_setor_id",
+                                "resource.departmentId",
+                                "hr.leave_requests.department_id",
                                 FactValueType.INT64,
                                 Set.of(SearchPredicateOperator.EQ, SearchPredicateOperator.IN),
                                 true)
@@ -134,7 +134,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
         );
 
         DecisionPointIdentity dpId = DecisionPointIdentity.resourceOperation(
-                "praxis-ergon-showcase", "human-resources.afastamentos", "filter");
+                "workforce-service", "human-resources.leave-requests", "filter");
         DecisionPointDescriptor dpFilter = new DecisionPointDescriptor(
                 DecisionPointDescriptor.SCHEMA_VERSION_V1,
                 dpId,
@@ -143,7 +143,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 null,
                 "SEARCH",
                 "POST",
-                "/api/human-resources/afastamentos/filter",
+                "/api/human-resources/leave-requests/filter",
                 Set.of(EvaluationMode.SEARCH, EvaluationMode.TARGET),
                 Set.of(EnforcementCapability.ACCESS, EnforcementCapability.DATA_SCOPE, EnforcementCapability.FIELD_USE, EnforcementCapability.MASK),
                 Set.of(FieldUseCategory.VALUE, FieldUseCategory.FILTER, FieldUseCategory.SORT, FieldUseCategory.GROUP, FieldUseCategory.AGGREGATE, FieldUseCategory.JOIN),
@@ -159,8 +159,8 @@ class Wave2PolicyAndDataScopeConformanceTest {
         );
 
         AuthorizationPolicyRule validRule = new AuthorizationPolicyRule(
-                "rule-lotacao-read",
-                "Permite leitura por lotação com proteção de CID",
+                "rule-department-read",
+                "Allows department-scoped reads with medical code masking",
                 Set.of(EvaluationMode.TARGET, EvaluationMode.SEARCH),
                 new AuthorizationSourceCondition(
                         AuthorizationSourceCondition.LANGUAGE_PRAXIS_JSON_LOGIC,
@@ -175,7 +175,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
                                         AuthorizationSourceCondition.LANGUAGE_PRAXIS_JSON_LOGIC,
                                         ConditionProfileKind.AUTHORIZATION_SEARCH_SOURCE_V1,
                                         Map.of("in", List.of(
-                                                Map.of("var", "resource.lotacaoSetorId"),
+                                                Map.of("var", "resource.departmentId"),
                                                 Map.of("var", "subject.organizationUnitIds")))
                                 )
                         ),
@@ -187,43 +187,43 @@ class Wave2PolicyAndDataScopeConformanceTest {
                         )),
                         List.of(),
                         List.of(new MaskContributionSpec(
-                                PolicyFieldSelector.exact(Set.of("ergon.afastamentos.cid_codigo")),
+                                PolicyFieldSelector.exact(Set.of("hr.leave_requests.medical_code")),
                                 "REDACT_CONSTANT",
-                                Map.of("replacement", "***CID-RESTRITO***")
+                                Map.of("replacement", "***RESTRICTED-CODE***")
                         )),
-                        "AUTHZ_ALLOW_LOTACAO_READ"
+                        "AUTHZ_ALLOW_DEPARTMENT_READ"
                 ),
                 List.of(new ObligationDirective(
                         "DURABLE_AUDIT_EVIDENCE",
                         "ON_PERMIT",
                         "BEFORE_COMMIT_OUTBOX",
-                        Map.of("auditCategory", "AFASTAMENTO_READ")))
+                        Map.of("auditCategory", "LEAVE_REQUEST_READ")))
         );
 
         AuthorizationPolicyDefinition validPolicy = new AuthorizationPolicyDefinition(
                 AuthorizationPolicyDefinition.SCHEMA_VERSION_V1,
-                "pol-ergon-afastamentos",
+                "pol-hr-leave-requests",
                 "1.0.0",
-                "Política de Afastamentos",
-                "Governa escopo e proteção de CID",
+                "Leave Request Policy",
+                "Governs organizational scope and health code masking",
                 Set.of("ORGANIZATIONAL_SCOPE", "SENSITIVE_DATA_PROTECTION"),
                 "HUMAN_RESOURCES_ADMINISTRATION",
                 "LGPD:ART_7_III",
                 OpaProviderIoSchemas.COMBINING_PROFILE_V1,
                 List.of(PolicyTargetSpec.exact("tgt-filter", dpId.pointKey(), dpDigest, Set.of(EvaluationMode.SEARCH))),
-                new DualScopeDelegationSpec(
-                        "CEDENTE_CESSIONARIO_SPLIT",
-                        "resource.lotacaoSetorId",
-                        "resource.orgaoCessionarioId",
-                        Set.of("ergon.afastamentos.data_inicio"),
-                        Set.of("ergon.afastamentos.substituto_matricula")
+                DualScopeDelegationSpec.ofOriginAndDestination(
+                        DualScopeDelegationSpec.ORIGIN_DESTINATION_SPLIT,
+                        "resource.departmentId",
+                        "resource.destinationOrgId",
+                        Set.of("hr.leave_requests.start_date"),
+                        Set.of("hr.leave_requests.substitute_code")
                 ),
                 List.of(new PolicyFactRequirement("subject.organizationUnitIds", Set.of(EvaluationMode.SEARCH))),
                 List.of(validRule),
                 List.of(new PolicyMaterializationTargetSpec(
                         "policy_engine",
                         "opa-policy",
-                        "unit:pol-ergon-afastamentos:v1",
+                        "unit:pol-hr-leave-requests:v1",
                         OpaProviderIoSchemas.COMPILER_PROFILE_V1))
         );
 
@@ -238,14 +238,14 @@ class Wave2PolicyAndDataScopeConformanceTest {
         assertEquals(1, validResult.resolvedTargets().size());
         assertEquals(2, validResult.resolvedFieldSelectors().size());
 
-        // Counterexample 1 (CC02): Referencing non-queryable resource.facts.emCurso in authorization-search-source/v1
+        // Counterexample 1 (CC02): Referencing non-queryable resource.facts.isActive in authorization-search-source/v1
         List<Object> oversizedInList = new ArrayList<>();
         for (int i = 0; i < 70; i++) {
             oversizedInList.add(i);
         }
         AuthorizationPolicyRule invalidSearchRule = new AuthorizationPolicyRule(
                 "rule-invalid-search",
-                "Regra inválida em SEARCH",
+                "Invalid SEARCH rule",
                 Set.of(EvaluationMode.SEARCH),
                 new AuthorizationSourceCondition(
                         AuthorizationSourceCondition.LANGUAGE_PRAXIS_JSON_LOGIC,
@@ -259,7 +259,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
                                 new AuthorizationSourceCondition(
                                         AuthorizationSourceCondition.LANGUAGE_PRAXIS_JSON_LOGIC,
                                         ConditionProfileKind.AUTHORIZATION_SEARCH_SOURCE_V1,
-                                        Map.of("==", List.of(Map.of("var", "resource.facts.emCurso"), true))
+                                        Map.of("==", List.of(Map.of("var", "resource.facts.isActive"), true))
                                 )
                         ),
                         List.of(),
@@ -273,8 +273,8 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 AuthorizationPolicyDefinition.SCHEMA_VERSION_V1,
                 "pol-invalid",
                 "1.0.0",
-                "Política Inválida",
-                "Teste de rejeição",
+                "Invalid Policy",
+                "Rejection test",
                 Set.of(),
                 "HUMAN_RESOURCES_ADMINISTRATION",
                 "LGPD:ART_7_III",
@@ -302,12 +302,12 @@ class Wave2PolicyAndDataScopeConformanceTest {
         // P1-R02: EXACT field selector with unknown attributeId + TARGET-only fact in SEARCH rule.when()
         AuthorizationPolicyRule invalidExactSelectorAndWhenRule = new AuthorizationPolicyRule(
                 "rule-invalid-exact-and-when",
-                "Regra com attributeId inexistente e fato TARGET em when de SEARCH",
+                "Rule with unknown attributeId and TARGET-only fact in SEARCH when",
                 Set.of(EvaluationMode.SEARCH),
                 new AuthorizationSourceCondition(
                         AuthorizationSourceCondition.LANGUAGE_PRAXIS_JSON_LOGIC,
                         ConditionProfileKind.AUTHORIZATION_TARGET_V1,
-                        Map.of("==", List.of(Map.of("var", "resource.cidCodigo"), "J11"))
+                        Map.of("==", List.of(Map.of("var", "resource.medicalCode"), "J11"))
                 ),
                 new AuthorizationRuleContributions(
                         new AccessContributionSpec(ContributionAuthority.GRANT, RuleEffect.ALLOW),
@@ -315,7 +315,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
                         List.of(),
                         List.of(),
                         List.of(new MaskContributionSpec(
-                                PolicyFieldSelector.exact(Set.of("ergon.afastamentos.nonexistent_attr")),
+                                PolicyFieldSelector.exact(Set.of("hr.leave_requests.nonexistent_attr")),
                                 "REDACT_CONSTANT",
                                 Map.of("replacement", "***")
                         )),
@@ -327,8 +327,8 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 AuthorizationPolicyDefinition.SCHEMA_VERSION_V1,
                 "pol-invalid-exact",
                 "1.0.0",
-                "Política Seletor Inválido",
-                "Teste P1-R02",
+                "Invalid Selector Policy",
+                "P1-R02 test",
                 Set.of(),
                 "HUMAN_RESOURCES_ADMINISTRATION",
                 "LGPD:ART_7_III",
@@ -369,7 +369,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
         // 2. NULLIFY on ALWAYS_PRESENT (non-nullable) fact + unknown obligation type rejected by validator
         AuthorizationPolicyRule invalidMaskAndObligationRule = new AuthorizationPolicyRule(
                 "rule-invalid-mask-and-ob",
-                "Regra com NULLIFY em campo não-anulável e obrigação desconhecida",
+                "Rule with NULLIFY on non-nullable field and unknown obligation",
                 Set.of(EvaluationMode.TARGET),
                 new AuthorizationSourceCondition(
                         AuthorizationSourceCondition.LANGUAGE_PRAXIS_JSON_LOGIC,
@@ -385,7 +385,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
                                 new PolicyFieldSelector(
                                         org.praxisplatform.authz.contracts.policy.FieldSelectorKind.LINEAGE,
                                         Set.of(), Set.of(), Set.of(), Set.of(), Set.of(),
-                                        "ergon", "ergon.afastamentos.lotacao_", null),
+                                        "hr", "hr.leave_requests.department_", null),
                                 "NULLIFY",
                                 Map.of()
                         )),
@@ -401,8 +401,8 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 AuthorizationPolicyDefinition.SCHEMA_VERSION_V1,
                 "pol-invalid-mask-ob",
                 "1.0.0",
-                "Política Máscara e Obrigação Inválidas",
-                "Teste P1-R2 e P1-R1 LINEAGE",
+                "Invalid Mask and Obligation Policy",
+                "P1-R2 and P1-R1 LINEAGE test",
                 Set.of(),
                 "HUMAN_RESOURCES_ADMINISTRATION",
                 "LGPD:ART_7_III",
@@ -428,11 +428,92 @@ class Wave2PolicyAndDataScopeConformanceTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    void dualScopeDelegationSupportsNeutralOriginDestinationModesAndDeprecatedAliases() {
+        DualScopeDelegationSpec neutralSplit = DualScopeDelegationSpec.ofOriginAndDestination(
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.start_date"),
+                Set.of("hr.transfers.local_notes")
+        );
+        assertEquals(DualScopeDelegationSpec.ORIGIN_DESTINATION_SPLIT, neutralSplit.mode());
+        assertEquals("resource.originOrgId", neutralSplit.originFactPath());
+        assertEquals("resource.destinationOrgId", neutralSplit.destinationFactPath());
+        assertEquals(Set.of("hr.transfers.start_date"), neutralSplit.originExclusiveWriteAttributes());
+        assertEquals(Set.of("hr.transfers.local_notes"), neutralSplit.destinationAllowedWriteAttributes());
+        assertTrue(neutralSplit.allowsDestinationWrites());
+        assertFalse(neutralSplit.forbidsDestinationOnlyWrites());
+
+        // Backward-compatible deprecated delegates return identical values
+        assertEquals("resource.originOrgId", neutralSplit.cedenteFactPath());
+        assertEquals("resource.destinationOrgId", neutralSplit.cessionarioFactPath());
+        assertEquals(Set.of("hr.transfers.start_date"), neutralSplit.cedenteExclusiveWriteAttributes());
+        assertEquals(Set.of("hr.transfers.local_notes"), neutralSplit.cessionarioAllowedWriteAttributes());
+
+        DualScopeDelegationSpec originOnly = DualScopeDelegationSpec.ofOriginAndDestination(
+                DualScopeDelegationSpec.ORIGIN_ONLY_WRITE,
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.start_date"),
+                Set.of()
+        );
+        assertFalse(originOnly.allowsDestinationWrites());
+        assertTrue(originOnly.forbidsDestinationOnlyWrites());
+
+        DualScopeDelegationSpec readOnlyDest = DualScopeDelegationSpec.ofOriginAndDestination(
+                DualScopeDelegationSpec.READ_ONLY_DESTINATION,
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.start_date"),
+                Set.of("hr.transfers.local_notes")
+        );
+        assertFalse(readOnlyDest.allowsDestinationWrites());
+        assertTrue(readOnlyDest.forbidsDestinationOnlyWrites());
+
+        DualScopeDelegationSpec legacySplit = new DualScopeDelegationSpec(
+                DualScopeDelegationSpec.CEDENTE_CESSIONARIO_SPLIT,
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.a"),
+                Set.of("hr.transfers.b")
+        );
+        assertTrue(legacySplit.allowsDestinationWrites());
+        assertFalse(legacySplit.forbidsDestinationOnlyWrites());
+
+        DualScopeDelegationSpec legacyReadOnly = new DualScopeDelegationSpec(
+                DualScopeDelegationSpec.READ_ONLY_CESSIONARIO,
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.a"),
+                Set.of()
+        );
+        assertTrue(legacyReadOnly.forbidsDestinationOnlyWrites());
+
+        DualScopeDelegationSpec legacyOriginOnly = new DualScopeDelegationSpec(
+                DualScopeDelegationSpec.CEDENTE_ONLY_WRITE,
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.a"),
+                Set.of()
+        );
+        assertTrue(legacyOriginOnly.forbidsDestinationOnlyWrites());
+
+        // Disjointness invariant remains enforced
+        assertThrows(IllegalArgumentException.class, () -> DualScopeDelegationSpec.ofOriginAndDestination(
+                DualScopeDelegationSpec.ORIGIN_DESTINATION_SPLIT,
+                "resource.originOrgId",
+                "resource.destinationOrgId",
+                Set.of("hr.transfers.shared"),
+                Set.of("hr.transfers.shared")
+        ));
+    }
+
+    @Test
     void cc03_kleene3VlTruthTableAndPersistenceNeutralDataScopePlan() {
         ComparisonPredicateIr eq101 = new ComparisonPredicateIr(
                 SearchPredicateOperator.EQ,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id",
+                "resource.departmentId",
+                "hr.leave_requests.department_id",
                 FactValueType.INT64,
                 new LiteralOperandIr(101L),
                 false
@@ -443,13 +524,13 @@ class Wave2PolicyAndDataScopeConformanceTest {
         );
         NullabilityPredicateIr isNull = new NullabilityPredicateIr(
                 SearchPredicateOperator.IS_NULL,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id"
+                "resource.departmentId",
+                "hr.leave_requests.department_id"
         );
         NullabilityPredicateIr isNotNull = new NullabilityPredicateIr(
                 SearchPredicateOperator.IS_NOT_NULL,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id"
+                "resource.departmentId",
+                "hr.leave_requests.department_id"
         );
         LogicalPredicateIr notIsNull = new LogicalPredicateIr(
                 SearchPredicateOperator.NOT,
@@ -457,13 +538,13 @@ class Wave2PolicyAndDataScopeConformanceTest {
         );
 
         Map<String, ResolvedFactValue> presentMatch = Map.of(
-                "resource.lotacaoSetorId", ResolvedFactValue.present("resource.lotacaoSetorId", 101L));
+                "resource.departmentId", ResolvedFactValue.present("resource.departmentId", 101L));
         Map<String, ResolvedFactValue> presentDiff = Map.of(
-                "resource.lotacaoSetorId", ResolvedFactValue.present("resource.lotacaoSetorId", 202L));
+                "resource.departmentId", ResolvedFactValue.present("resource.departmentId", 202L));
         Map<String, ResolvedFactValue> explicitNull = Map.of(
-                "resource.lotacaoSetorId", ResolvedFactValue.explicitNull("resource.lotacaoSetorId"));
+                "resource.departmentId", ResolvedFactValue.explicitNull("resource.departmentId"));
         Map<String, ResolvedFactValue> structurallyMissing = Map.of(
-                "resource.lotacaoSetorId", ResolvedFactValue.absent("resource.lotacaoSetorId"));
+                "resource.departmentId", ResolvedFactValue.absent("resource.departmentId"));
 
         // Row 1: EQ(attr, 101) -> T, F, U, U
         assertEquals(KleeneTruthValue.TRUE, KleeneSearchPredicateEvaluator.evaluate(eq101, presentMatch));
@@ -495,10 +576,10 @@ class Wave2PolicyAndDataScopeConformanceTest {
         // FieldRefOperandIr comparison (DSP-AST-010)
         ComparisonPredicateIr fieldRefEq = new ComparisonPredicateIr(
                 SearchPredicateOperator.EQ,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id",
+                "resource.departmentId",
+                "hr.leave_requests.department_id",
                 FactValueType.INT64,
-                new FieldRefOperandIr("resource.orgaoCessionarioId", "ergon.afastamentos.orgao_cessionario_id"),
+                new FieldRefOperandIr("resource.destinationOrgId", "hr.leave_requests.destination_org_id"),
                 false
         );
         assertEquals(
@@ -506,16 +587,16 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 KleeneSearchPredicateEvaluator.evaluate(
                         fieldRefEq,
                         Map.of(
-                                "resource.lotacaoSetorId", ResolvedFactValue.present("resource.lotacaoSetorId", 505L),
-                                "resource.orgaoCessionarioId", ResolvedFactValue.present("resource.orgaoCessionarioId", 505L)
+                                "resource.departmentId", ResolvedFactValue.present("resource.departmentId", 505L),
+                                "resource.destinationOrgId", ResolvedFactValue.present("resource.destinationOrgId", 505L)
                         ))
         );
 
         // Counterexample (CC03): TEXT_CONTAINS on INT64 must be rejected (DSP-IR-004)
         assertThrows(IllegalArgumentException.class, () -> new ComparisonPredicateIr(
                 SearchPredicateOperator.TEXT_CONTAINS,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id",
+                "resource.departmentId",
+                "hr.leave_requests.department_id",
                 FactValueType.INT64,
                 new LiteralOperandIr("101"),
                 false
@@ -524,16 +605,16 @@ class Wave2PolicyAndDataScopeConformanceTest {
         // P1-R04: Ordered comparison on BOOLEAN and caseInsensitive on INT64 must be rejected (DSP-IR-004)
         assertThrows(IllegalArgumentException.class, () -> new ComparisonPredicateIr(
                 SearchPredicateOperator.LT,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id",
+                "resource.departmentId",
+                "hr.leave_requests.department_id",
                 FactValueType.BOOLEAN,
                 new LiteralOperandIr(true),
                 false
         ));
         assertThrows(IllegalArgumentException.class, () -> new ComparisonPredicateIr(
                 SearchPredicateOperator.EQ,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id",
+                "resource.departmentId",
+                "hr.leave_requests.department_id",
                 FactValueType.INT64,
                 new LiteralOperandIr(101L),
                 true
@@ -542,8 +623,8 @@ class Wave2PolicyAndDataScopeConformanceTest {
         // P1-R04: Incompatible scalar types in NE evaluate to UNKNOWN (not TRUE!)
         ComparisonPredicateIr ne101 = new ComparisonPredicateIr(
                 SearchPredicateOperator.NE,
-                "resource.lotacaoSetorId",
-                "ergon.afastamentos.lotacao_setor_id",
+                "resource.departmentId",
+                "hr.leave_requests.department_id",
                 FactValueType.INT64,
                 new LiteralOperandIr(101L),
                 false
@@ -552,7 +633,7 @@ class Wave2PolicyAndDataScopeConformanceTest {
                 KleeneTruthValue.UNKNOWN,
                 KleeneSearchPredicateEvaluator.evaluate(
                         ne101,
-                        Map.of("resource.lotacaoSetorId", ResolvedFactValue.present("resource.lotacaoSetorId", "incompatible-string"))
+                        Map.of("resource.departmentId", ResolvedFactValue.present("resource.departmentId", "incompatible-string"))
                 )
         );
 
@@ -560,19 +641,19 @@ class Wave2PolicyAndDataScopeConformanceTest {
         DataScopePlan plan = new DataScopePlan(
                 DataScopePlan.FORMAT_V1,
                 "dsp-1",
-                "resource-operation/human-resources.afastamentos/filter",
-                "human-resources.afastamentos",
+                "resource-operation/human-resources.leave-requests/filter",
+                "human-resources.leave-requests",
                 "rev-1",
                 "sha256:99887766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa",
                 "sha256:8f9d2a1b4c6e7f01928374655647382910abcdef1234567890abcdef12345678",
-                "qp-afastamentos",
+                "qp-leave-requests",
                 "sha256:7766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa9988",
                 DataScopeOutcome.FILTER,
                 PushdownMode.FULL_PUSHDOWN,
                 new ComparisonPredicateIr(
                         SearchPredicateOperator.IN,
-                        "resource.lotacaoSetorId",
-                        "ergon.afastamentos.lotacao_setor_id",
+                        "resource.departmentId",
+                        "hr.leave_requests.department_id",
                         FactValueType.INT64,
                         new LiteralListOperandIr(List.of(101L, 102L)),
                         false

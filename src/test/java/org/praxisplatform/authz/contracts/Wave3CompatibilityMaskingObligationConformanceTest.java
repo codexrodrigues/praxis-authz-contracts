@@ -50,12 +50,12 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
         String h7 = CanonicalDigestCalculator.computeDigest(DigestDomainKind.POLICY_SET_DIGEST, "pset");
         String h8 = CanonicalDigestCalculator.computeDigest(DigestDomainKind.BUNDLE_ARTIFACT_DIGEST, "bnd");
 
-        String pointKey = "resource-operation/human-resources.afastamentos/atualizarSubstituto";
+        String pointKey = "resource-operation/human-resources.leave-requests/assignSubstitute";
         OpaPolicyUnitManifest unit = new OpaPolicyUnitManifest(
-                "unit:pol-afastamentos:v1",
-                "pol-afastamentos",
+                "unit:pol-leave-requests:v1",
+                "pol-leave-requests",
                 "1.0.0",
-                "praxis.authz.units.pol_afastamentos_v1",
+                "praxis.authz.units.pol_leave_requests_v1",
                 new PolicyDigestChain(h1, h2, h3, h4, h5),
                 Set.of(pointKey)
         );
@@ -66,9 +66,9 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
 
         HostPolicyCompatibilityManifest hostManifest = new HostPolicyCompatibilityManifest(
                 HostPolicyCompatibilityManifest.SCHEMA_VERSION_V1,
-                "praxis-ergon-showcase",
-                "praxis-ergon-showcase",
-                "8.0.0-SNAPSHOT",
+                "workforce-service",
+                "workforce-service",
+                "1.0.0-SNAPSHOT",
                 Instant.now(),
                 OpaProviderIoSchemas.REQUIRED_PROVIDER_IO_SCHEMAS_V1,
                 Set.of("OMIT", "NULLIFY", "REDACT_CONSTANT", "PARTIAL_MASK", "CPF_CNPJ_PARTIAL", "HASH_TOKEN_KEYED", "SUMMARY_ONLY"),
@@ -80,7 +80,7 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
         ImpactGraphBaseline completeImpact = new ImpactGraphBaseline(
                 "imp-1",
                 ImpactCompletenessStatus.COMPLETE,
-                Set.of("unit:pol-afastamentos:v1"),
+                Set.of("unit:pol-leave-requests:v1"),
                 Set.of(pointKey),
                 Set.of("REDACT_CONSTANT"),
                 Set.of("REQUIRE_JUSTIFICATION"),
@@ -95,7 +95,7 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
         ImpactGraphBaseline missingMaskImpact = new ImpactGraphBaseline(
                 "imp-2",
                 ImpactCompletenessStatus.COMPLETE,
-                Set.of("unit:pol-afastamentos:v1"),
+                Set.of("unit:pol-leave-requests:v1"),
                 Set.of(pointKey),
                 Set.of("CUSTOM_REGEX_MASK"),
                 Set.of(),
@@ -109,7 +109,7 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
         ImpactGraphBaseline partialImpact = new ImpactGraphBaseline(
                 "imp-3",
                 ImpactCompletenessStatus.PARTIAL,
-                Set.of("unit:pol-afastamentos:v1"),
+                Set.of("unit:pol-leave-requests:v1"),
                 Set.of(pointKey),
                 Set.of(),
                 Set.of(),
@@ -123,12 +123,12 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
     @Test
     void cc09_maskStrategyLatticeCommutativityAssociativityIdempotencyAndConflicts() {
         DefaultMaskStrategyRegistry registry = new DefaultMaskStrategyRegistry();
-        String attr = "ergon.afastamentos.cid_codigo";
+        String attr = "hr.leave_requests.medical_code";
 
         MaskDirective omit = new MaskDirective(attr, "OMIT", Map.of());
         MaskDirective nullify = new MaskDirective(attr, "NULLIFY", Map.of());
-        MaskDirective redactA = new MaskDirective(attr, "REDACT_CONSTANT", Map.of("replacement", "***RESTRITO***"));
-        MaskDirective redactB = new MaskDirective(attr, "REDACT_CONSTANT", Map.of("replacement", "***OCULTO***"));
+        MaskDirective redactA = new MaskDirective(attr, "REDACT_CONSTANT", Map.of("replacement", "***RESTRICTED***"));
+        MaskDirective redactB = new MaskDirective(attr, "REDACT_CONSTANT", Map.of("replacement", "***HIDDEN***"));
         MaskDirective partial1 = new MaskDirective(attr, "PARTIAL_MASK", Map.of("visiblePrefix", 3, "visibleSuffix", 0));
         MaskDirective partial2 = new MaskDirective(attr, "PARTIAL_MASK", Map.of("visiblePrefix", 0, "visibleSuffix", 4));
         MaskDirective cpfPartial = new MaskDirective(attr, "CPF_CNPJ_PARTIAL", Map.of());
@@ -223,7 +223,7 @@ class Wave3CompatibilityMaskingObligationConformanceTest {
 
         // ENF-OBL-003: Unfulfilled obligation at barrier blocks PERMIT disposition
         ObligationFulfillmentResult fulfilled = registry.findHandler("REQUIRE_JUSTIFICATION").orElseThrow()
-                .fulfill(m1.mergedDirective(), Map.of("justificationText", "Substituição emergencial homologada pela chefia"));
+                .fulfill(m1.mergedDirective(), Map.of("justificationText", "Emergency substitution approved by manager"));
         assertTrue(fulfilled.fulfilled());
 
         ObligationFulfillmentResult unfulfilled = registry.findHandler("DURABLE_AUDIT_EVIDENCE").orElseThrow()
